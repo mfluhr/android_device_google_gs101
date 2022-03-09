@@ -484,7 +484,8 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 	android.hardware.graphics.mapper@4.0-impl \
 	android.hardware.graphics.allocator@4.0-service \
-	android.hardware.graphics.allocator@4.0-impl
+	android.hardware.graphics.allocator@4.0-impl \
+	android.hardware.graphics.allocator-V1-service
 
 PRODUCT_PACKAGES += \
 	android.hardware.memtrack-service.pixel \
@@ -830,6 +831,10 @@ PRODUCT_USE_DYNAMIC_PARTITIONS := true
 PRODUCT_PRODUCT_PROPERTIES += \
 	persist.sys.fuse.passthrough.enable=true
 
+# Force disable of FUSE BPF
+PRODUCT_PRODUCT_PROPERTIES += \
+	persist.sys.fuse.bpf.enable=false
+
 # Use /product/etc/fstab.postinstall to mount system_other
 PRODUCT_PRODUCT_PROPERTIES += \
 	ro.postinstall.fstab.prefix=/product
@@ -966,7 +971,7 @@ PRODUCT_PACKAGES += \
 	android.hardware.audio.service \
 	android.hardware.audio@7.1-impl \
 	android.hardware.audio.effect@7.0-impl \
-	android.hardware.bluetooth.audio@2.1-impl \
+	android.hardware.bluetooth.audio-impl \
 	android.hardware.soundtrigger@2.3-impl \
 	vendor.google.whitechapel.audio.audioext@3.0-impl
 
