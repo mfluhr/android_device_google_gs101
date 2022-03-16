@@ -17,8 +17,9 @@
 include device/google/gs-common/device.mk
 
 TARGET_BOARD_PLATFORM := gs101
+DEVICE_IS_64BIT_ONLY ?= $(if $(filter %_64,$(TARGET_PRODUCT)),true,false)
 
-ifneq (,$(filter %tangor tangor% %_64,$(TARGET_PRODUCT)))
+ifeq ($(DEVICE_IS_64BIT_ONLY),true)
 LOCAL_64ONLY := _64
 endif
 
@@ -484,7 +485,8 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
 	android.hardware.graphics.mapper@4.0-impl \
 	android.hardware.graphics.allocator@4.0-service \
-	android.hardware.graphics.allocator@4.0-impl
+	android.hardware.graphics.allocator@4.0-impl \
+	android.hardware.graphics.allocator-V1-service
 
 PRODUCT_PACKAGES += \
 	android.hardware.memtrack-service.pixel \
@@ -830,6 +832,10 @@ PRODUCT_USE_DYNAMIC_PARTITIONS := true
 PRODUCT_PRODUCT_PROPERTIES += \
 	persist.sys.fuse.passthrough.enable=true
 
+# Force disable of FUSE BPF
+PRODUCT_PRODUCT_PROPERTIES += \
+	persist.sys.fuse.bpf.enable=false
+
 # Use /product/etc/fstab.postinstall to mount system_other
 PRODUCT_PRODUCT_PROPERTIES += \
 	ro.postinstall.fstab.prefix=/product
@@ -898,10 +904,10 @@ ifneq ($(BOARD_WITHOUT_RADIO),true)
 $(call inherit-product-if-exists, vendor/samsung_slsi/telephony/$(BOARD_USES_SHARED_VENDOR_TELEPHONY)/common/device-vendor.mk)
 endif
 
-ifeq (,$(filter %tangor tangor% %_64,$(TARGET_PRODUCT)))
-$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
-else
+ifeq ($(DEVICE_IS_64BIT_ONLY),true)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
+else
+$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
 endif
 #$(call inherit-product, hardware/google_devices/exynos5/exynos5.mk)
 #$(call inherit-product-if-exists, hardware/google_devices/gs101/gs101.mk)
@@ -913,8 +919,7 @@ $(call inherit-product-if-exists, vendor/google/camera/devices/whi/device-vendor
 
 PRODUCT_COPY_FILES += \
 	device/google/gs101/default-permissions.xml:$(TARGET_COPY_OUT_PRODUCT)/etc/default-permissions/default-permissions.xml \
-	device/google/gs101/component-overrides.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sysconfig/component-overrides.xml \
-	frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
+	device/google/gs101/component-overrides.xml:$(TARGET_COPY_OUT_VENDOR)/etc/sysconfig/component-overrides.xml
 
 # modem_svc_sit daemon
 PRODUCT_PACKAGES += modem_svc_sit
@@ -966,7 +971,7 @@ PRODUCT_PACKAGES += \
 	android.hardware.audio.service \
 	android.hardware.audio@7.1-impl \
 	android.hardware.audio.effect@7.0-impl \
-	android.hardware.bluetooth.audio@2.1-impl \
+	android.hardware.bluetooth.audio-impl \
 	android.hardware.soundtrigger@2.3-impl \
 	vendor.google.whitechapel.audio.audioext@3.0-impl
 
@@ -993,7 +998,8 @@ PRODUCT_PACKAGES += \
 	audio.r_submix.default \
 	libamcsextfile \
 	audio_amcs_ext \
-
+	libspatialaudio \
+	librondo
 
 #Audio Vendor libraries
 PRODUCT_PACKAGES += \
@@ -1033,6 +1039,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.config.media_vol_steps=25 \
 	ro.audio.monitorRotation = true \
 	ro.audio.offload_wakelock=false
+
+# DO NOT SUBMIT declare use of spatial audio
+PRODUCT_PROPERTY_OVERRIDES += \
+	ro.audio.spatializer_enabled=true
 
 ifeq (,$(filter aosp_%,$(TARGET_PRODUCT)))
 # IAudioMetricExt HIDL
