@@ -835,9 +835,9 @@ PRODUCT_USE_DYNAMIC_PARTITIONS := true
 PRODUCT_PRODUCT_PROPERTIES += \
 	persist.sys.fuse.passthrough.enable=true
 
-# Force disable of FUSE BPF
+# Use FUSE BPF
 PRODUCT_PRODUCT_PROPERTIES += \
-	persist.sys.fuse.bpf.enable=false
+	ro.fuse.bpf.enabled=true
 
 # Use /product/etc/fstab.postinstall to mount system_other
 PRODUCT_PRODUCT_PROPERTIES += \
@@ -996,7 +996,6 @@ PRODUCT_PACKAGES += \
 	audio_spk_35l41 \
 	audio.usb.default \
 	audio.usbv2.default \
-	audio.a2dp.default \
 	audio.bluetooth.default \
 	audio.r_submix.default \
 	libamcsextfile \
