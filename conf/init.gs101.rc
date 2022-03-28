@@ -660,8 +660,8 @@ on property:vendor.device.modules.ready=1
     chown system system /sys/devices/virtual/sec/tsp/cmd
     chown system system /sys/devices/virtual/sec/tsp/cmd_result
     chown system system /sys/devices/virtual/sec/tsp/status
-    chown system system /sys/devices/virtual/input/nvt_touch/force_touch_active
-    chown system system /sys/devices/virtual/input/nvt_touch/nvt_dttw_mode
+    chown system system /sys/class/spi_master/spi11/spi11.0/input/nvt_touch/force_touch_active
+    chown system system /sys/class/spi_master/spi11/spi11.0/input/nvt_touch/nvt_dttw_mode
     # Allow access to touch
     chown system input /dev/touch_offload
     chmod 660 /dev/touch_offload
@@ -764,6 +764,9 @@ on property:sys.boot_completed=1
     # AOC reset permission
     chown root system /sys/devices/platform/19000000.aoc/reset
     chmod 0220 /sys/devices/platform/19000000.aoc/reset
+
+    # write serialno to battery path for pairing
+    write /sys/class/power_supply/battery/dev_sn ${ro.boot.serialno}
 
 # Test Harness Mode default battery profile.
 on  property:persist.sys.test_harness=1 && property:persist.vendor.testing_battery_profile=0
