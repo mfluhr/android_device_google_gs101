@@ -589,6 +589,9 @@ PRODUCT_COPY_FILES += \
 ifneq ($(DISABLE_CAMERA_FS_AF),true)
 PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.camera.flash-autofocus.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.flash-autofocus.xml
+else
+PRODUCT_COPY_FILES += \
+	frameworks/native/data/etc/android.hardware.camera.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.xml
 endif
 
 PRODUCT_COPY_FILES += \
@@ -832,9 +835,9 @@ PRODUCT_USE_DYNAMIC_PARTITIONS := true
 PRODUCT_PRODUCT_PROPERTIES += \
 	persist.sys.fuse.passthrough.enable=true
 
-# Force disable of FUSE BPF
+# Use FUSE BPF
 PRODUCT_PRODUCT_PROPERTIES += \
-	persist.sys.fuse.bpf.enable=false
+	ro.fuse.bpf.enabled=false
 
 # Use /product/etc/fstab.postinstall to mount system_other
 PRODUCT_PRODUCT_PROPERTIES += \
@@ -993,7 +996,6 @@ PRODUCT_PACKAGES += \
 	audio_spk_35l41 \
 	audio.usb.default \
 	audio.usbv2.default \
-	audio.a2dp.default \
 	audio.bluetooth.default \
 	audio.r_submix.default \
 	libamcsextfile \
@@ -1040,9 +1042,9 @@ PRODUCT_PROPERTY_OVERRIDES += \
 	ro.audio.monitorRotation = true \
 	ro.audio.offload_wakelock=false
 
-# DO NOT SUBMIT declare use of spatial audio
-PRODUCT_PROPERTY_OVERRIDES += \
-	ro.audio.spatializer_enabled=true
+# declare use of spatial audio
+# PRODUCT_PROPERTY_OVERRIDES += \
+#	ro.audio.spatializer_enabled=true
 
 ifeq (,$(filter aosp_%,$(TARGET_PRODUCT)))
 # IAudioMetricExt HIDL
