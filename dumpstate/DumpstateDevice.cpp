@@ -383,6 +383,7 @@ void DumpstateDevice::dumpPowerSection(int fd) {
     DumpFileToFd(fd, "TTF details", "/sys/class/power_supply/battery/ttf_details");
     DumpFileToFd(fd, "TTF stats", "/sys/class/power_supply/battery/ttf_stats");
     DumpFileToFd(fd, "maxq", "/dev/logbuffer_maxq");
+    DumpFileToFd(fd, "aacr_state", "/sys/class/power_supply/battery/aacr_state");
 
     RunCommandToFd(fd, "TRICKLE-DEFEND Config", {"/vendor/bin/sh", "-c",
                         " cd /sys/devices/platform/google,battery/power_supply/battery/;"
@@ -398,6 +399,7 @@ void DumpstateDevice::dumpPowerSection(int fd) {
     if (!PropertiesHelper::IsUserBuild()) {
 
         DumpFileToFd(fd, "DC_registers dump", "/sys/class/power_supply/pca9468-mains/device/registers_dump");
+        DumpFileToFd(fd, "Charging table dump", "/d/google_battery/chg_raw_profile");
 
 
         RunCommandToFd(fd, "fg_model", {"/vendor/bin/sh", "-c",
@@ -426,8 +428,14 @@ void DumpstateDevice::dumpPowerSection(int fd) {
     /* EEPROM State */
     if (!stat("/sys/devices/platform/10970000.hsi2c/i2c-4/4-0050/eeprom", &buffer)) {
         RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-4/4-0050/eeprom"});
-    } else {
+    } else if(!stat("/sys/devices/platform/10970000.hsi2c/i2c-5/5-0050/eeprom", &buffer)) {
         RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-5/5-0050/eeprom"});
+    } else if(!stat("/sys/devices/platform/10970000.hsi2c/i2c-6/6-0050/eeprom", &buffer)) {
+        RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-6/6-0050/eeprom"});
+    } else if(!stat("/sys/devices/platform/10970000.hsi2c/i2c-7/7-0050/eeprom", &buffer)) {
+        RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-7/7-0050/eeprom"});
+    } else {
+        RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-8/8-0050/eeprom"});
     }
 
     DumpFileToFd(fd, "Charger Stats", "/sys/class/power_supply/battery/charge_details");
@@ -858,8 +866,7 @@ void DumpstateDevice::dumpMemorySection(int fd) {
                         "fi; "
                         "done"});
     DumpFileToFd(fd, "dmabuf info", "/d/dma_buf/bufinfo");
-    DumpFileToFd(fd, "Page Pinner - longterm pin", "/sys/kernel/debug/page_pinner/longterm_pinner");
-    DumpFileToFd(fd, "Page Pinner - alloc_contig_failed", "/sys/kernel/debug/page_pinner/alloc_contig_failed");
+    DumpFileToFd(fd, "Page Pinner - longterm pin", "/sys/kernel/debug/page_pinner/buffer");
     RunCommandToFd(fd, "Pixel CMA stat", {"/vendor/bin/sh", "-c",
                    "for d in $(ls -d /sys/kernel/pixel_stat/mm/cma/*); do "
                        "if [ -f $d ]; then "
