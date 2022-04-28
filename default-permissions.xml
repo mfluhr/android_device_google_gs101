@@ -47,6 +47,8 @@
         <!-- Location -->
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
         <permission name="android.permission.ACCESS_BACKGROUND_LOCATION" fixed="false"/>
+        <!-- Battery Widget -->
+        <permission name="android.permission.BLUETOOTH_CONNECT" fixed="false"/>
     </exception>
 
     <exception package="com.google.android.apps.camera.services">
@@ -79,6 +81,8 @@
         <permission name="android.permission.WRITE_CALL_LOG" fixed="false"/>
         <!-- Used to set up a Wi-Fi P2P network -->
         <permission name="android.permission.ACCESS_FINE_LOCATION" fixed="false"/>
+        <!-- Notifications -->
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
     </exception>
 
     <exception
@@ -117,6 +121,15 @@
         <!-- Microphone: To hear user's voice commands -->
         <permission name="android.permission.RECORD_AUDIO" fixed="false"/>
     </exception>
-
+    <exception
+        package="com.google.android.deskclock">
+        <!-- Notifications -->
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
+    </exception>
+    <exception
+        package="com.google.android.apps.tips">
+        <!-- Notifications -->
+        <permission name="android.permission.POST_NOTIFICATIONS" fixed="false"/>
+    </exception>
 </exceptions>
 
