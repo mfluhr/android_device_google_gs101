@@ -428,8 +428,14 @@ void DumpstateDevice::dumpPowerSection(int fd) {
     /* EEPROM State */
     if (!stat("/sys/devices/platform/10970000.hsi2c/i2c-4/4-0050/eeprom", &buffer)) {
         RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-4/4-0050/eeprom"});
-    } else {
+    } else if(!stat("/sys/devices/platform/10970000.hsi2c/i2c-5/5-0050/eeprom", &buffer)) {
         RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-5/5-0050/eeprom"});
+    } else if(!stat("/sys/devices/platform/10970000.hsi2c/i2c-6/6-0050/eeprom", &buffer)) {
+        RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-6/6-0050/eeprom"});
+    } else if(!stat("/sys/devices/platform/10970000.hsi2c/i2c-7/7-0050/eeprom", &buffer)) {
+        RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-7/7-0050/eeprom"});
+    } else {
+        RunCommandToFd(fd, "Battery EEPROM", {"/vendor/bin/sh", "-c", "xxd /sys/devices/platform/10970000.hsi2c/i2c-8/8-0050/eeprom"});
     }
 
     DumpFileToFd(fd, "Charger Stats", "/sys/class/power_supply/battery/charge_details");
@@ -860,8 +866,7 @@ void DumpstateDevice::dumpMemorySection(int fd) {
                         "fi; "
                         "done"});
     DumpFileToFd(fd, "dmabuf info", "/d/dma_buf/bufinfo");
-    DumpFileToFd(fd, "Page Pinner - longterm pin", "/sys/kernel/debug/page_pinner/longterm_pinner");
-    DumpFileToFd(fd, "Page Pinner - alloc_contig_failed", "/sys/kernel/debug/page_pinner/alloc_contig_failed");
+    DumpFileToFd(fd, "Page Pinner - longterm pin", "/sys/kernel/debug/page_pinner/buffer");
     RunCommandToFd(fd, "Pixel CMA stat", {"/vendor/bin/sh", "-c",
                    "for d in $(ls -d /sys/kernel/pixel_stat/mm/cma/*); do "
                        "if [ -f $d ]; then "
