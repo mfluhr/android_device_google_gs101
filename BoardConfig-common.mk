@@ -192,6 +192,9 @@ BOARD_GOOGLE_DYNAMIC_PARTITIONS_PARTITION_LIST := \
 # Set error limit to BOARD_SUPER_PARTITON_SIZE - 500MB
 BOARD_SUPER_PARTITION_ERROR_LIMIT := 8006926336
 
+# Testing related defines
+BOARD_PERFSETUP_SCRIPT := platform_testing/scripts/perf-setup/r4o6-setup.sh
+
 #
 # AUDIO & VOICE
 #
@@ -381,9 +384,6 @@ BOARD_KERNEL_CMDLINE += at24.write_timeout=100
 
 # Enable larger logbuf
 BOARD_KERNEL_CMDLINE += log_buf_len=1024K
-
-# Enable load module in parallel
-BOARD_BOOTCONFIG += androidboot.load_modules_parallel=true
 
 # Protected VM firmware
 BOARD_PVMFWIMAGE_PARTITION_SIZE := 0x00100000
