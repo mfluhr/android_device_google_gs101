@@ -399,6 +399,8 @@ void DumpstateDevice::dumpPowerSection(int fd) {
     if (!PropertiesHelper::IsUserBuild()) {
 
         DumpFileToFd(fd, "DC_registers dump", "/sys/class/power_supply/pca9468-mains/device/registers_dump");
+        DumpFileToFd(fd, "max77759_chg registers dump", "/d/max77759_chg/registers");
+        DumpFileToFd(fd, "max77729_pmic registers dump", "/d/max77729_pmic/registers");
         DumpFileToFd(fd, "Charging table dump", "/d/google_battery/chg_raw_profile");
 
 
@@ -866,8 +868,7 @@ void DumpstateDevice::dumpMemorySection(int fd) {
                         "fi; "
                         "done"});
     DumpFileToFd(fd, "dmabuf info", "/d/dma_buf/bufinfo");
-    DumpFileToFd(fd, "Page Pinner - longterm pin", "/sys/kernel/debug/page_pinner/longterm_pinner");
-    DumpFileToFd(fd, "Page Pinner - alloc_contig_failed", "/sys/kernel/debug/page_pinner/alloc_contig_failed");
+    DumpFileToFd(fd, "Page Pinner - longterm pin", "/sys/kernel/debug/page_pinner/buffer");
     RunCommandToFd(fd, "Pixel CMA stat", {"/vendor/bin/sh", "-c",
                    "for d in $(ls -d /sys/kernel/pixel_stat/mm/cma/*); do "
                        "if [ -f $d ]; then "
