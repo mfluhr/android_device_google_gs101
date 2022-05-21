@@ -100,7 +100,8 @@
     <!-- Height of the status bar.
          Do not read this dimen directly. Use {@link SystemBarUtils#getStatusBarHeight} instead.
          -->
-    <dimen name="status_bar_height">28dp</dimen>
+    <dimen name="status_bar_height_default">28dp</dimen>
+    <dimen name="status_bar_height_portrait">28dp</dimen>
 
     <!-- Height of area above QQS where battery/time go (equal to status bar height if > 48dp) -->
     <dimen name="quick_qs_offset_height">171px</dimen>
@@ -187,7 +188,7 @@
     <integer-array name="config_mappedColorModes">
         <item>0</item> <!-- COLOR_MODE_NATURAL -->
         <item>256</item> <!-- COLOR_MODE_BOOSTED -->
-        <item>2</item> <!-- COLOR_MODE_SATURATED -->
+        <item>3</item> <!-- COLOR_MODE_SATURATED -->
         <item>3</item> <!-- COLOR_MODE_AUTOMATIC -->
     </integer-array>
 
@@ -268,18 +269,12 @@
     <!-- Enable Zram writeback feature to allow unused pages in zram be written to flash. -->
     <bool name="config_zramWriteback">true</bool>
 
-    <!-- Configure tcp buffer sizes in the form:
-         rmem_min,rmem_def,rmem_max,wmem_min,wmem_def,wmem_max
-         If this is configured as an empty string, the system default will be applied.
-
-         For now this config is used by mobile data only. In the future it should be
-         used by Wi-Fi as well.
-
-         Note that starting from Android 13, the TCP buffer size is fixed after boot up, and should
-         never be changed based on carriers or the network types. The value should be configured
-         appropriately based on the device's memory and performance. It is recommended to use lower
-         values if the device has low memory or doesn't support high-speed network such like LTE,
-         NR, or Wifi.
-    -->
-    <string name="config_tcp_buffers" translatable="false">2097152,6291456,16777216,512000,2097152,8388608</string>
+    <!-- List of system components which are allowed to receive ServiceState entries in an
+         un-sanitized form, even if the location toggle is off. This is intended ONLY for system
+         components, such as the telephony stack, which require access to the full ServiceState for
+         tasks such as network registration. -->
+    <string-array name="config_serviceStateLocationAllowedPackages">
+        <item>"com.shannon.imsservice"</item>
+        <item>"com.android.phone"</item>
+    </string-array>
 </resources>
