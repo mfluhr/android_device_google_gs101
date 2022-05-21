@@ -250,6 +250,9 @@ on init
     # Wireless Charge stats (write 0)
     chown system system /sys/class/power_supply/wireless/device/charge_stats
 
+    # Thermal Charge stats (write 0)
+    chown system system /sys/devices/platform/google,charger/thermal_stats
+
     # Permission for wireless charging
     chown system system /sys/class/power_supply/wireless/capacity
     chown system system /sys/class/power_supply/wireless/device/rtx
@@ -736,6 +739,10 @@ on property:sys.boot_completed=1
     # Enable UFS powersaving
     write /dev/sys/block/bootdevice/clkgate_enable 1
 
+    # Reset DDR frequency
+    write /sys/devices/platform/17000010.devfreq_mif/devfreq/17000010.devfreq_mif/exynos_data/cancel_boot_freq 1
+    write /sys/devices/platform/17000020.devfreq_int/devfreq/17000020.devfreq_int/exynos_data/cancel_boot_freq 1
+
     # Setup final cpuset
     write /dev/cpuset/top-app/cpus 0-7
     write /dev/cpuset/foreground/cpus 0-3,4-5
@@ -754,15 +761,11 @@ on property:sys.boot_completed=1
     # align it with the vendor_group setting
     write /proc/vendor_sched/bg_uclamp_max 512
     write /dev/cpuctl/background/cpu.uclamp.max 50
-    write /proc/vendor_sched/bg_group_throttle 512
     write /proc/vendor_sched/sysbg_uclamp_max 512
     write /dev/cpuctl/system-background/cpu.uclamp.max 50
-    write /proc/vendor_sched/sysbg_group_throttle 512
     write /proc/vendor_sched/dex2oat_uclamp_max 615
     write /dev/cpuctl/dex2oat/cpu.uclamp.max 60
-    write /proc/vendor_sched/dex2oat_group_throttle 615
     write /proc/vendor_sched/ota_uclamp_max 410
-    write /proc/vendor_sched/ota_group_throttle 410
 
     # Set PMU freq limit parameters
     write /sys/devices/system/cpu/cpufreq/policy0/sched_pixel/lcpi_threshold 2
@@ -891,13 +894,19 @@ on post-fs-data
 # ODPM
 on fs
     chown system system /sys/devices/platform/acpm_mfd_bus@17500000/i2c-0/i2c-s2mpg10mfd/s2mpg10-meter/s2mpg10-odpm/iio:device1/enabled_rails
+    chown system system /sys/devices/platform/acpm_mfd_bus@17500000/i2c-0/0-001f/s2mpg10-meter/s2mpg10-odpm/iio:device1/enabled_rails
     chown system system /sys/devices/platform/acpm_mfd_bus@17510000/i2c-1/i2c-s2mpg11mfd/s2mpg11-meter/s2mpg11-odpm/iio:device0/enabled_rails
+    chown system system /sys/devices/platform/acpm_mfd_bus@17510000/i2c-1/1-002f/s2mpg11-meter/s2mpg11-odpm/iio:device0/enabled_rails
 
     chown system system /sys/devices/platform/acpm_mfd_bus@17500000/i2c-6/i2c-s2mpg10mfd/s2mpg10-meter/s2mpg10-odpm/iio:device0/enabled_rails
+    chown system system /sys/devices/platform/acpm_mfd_bus@17500000/i2c-6/6-001f/s2mpg10-meter/s2mpg10-odpm/iio:device0/enabled_rails
     chown system system /sys/devices/platform/acpm_mfd_bus@17510000/i2c-7/i2c-s2mpg11mfd/s2mpg11-meter/s2mpg11-odpm/iio:device1/enabled_rails
+    chown system system /sys/devices/platform/acpm_mfd_bus@17510000/i2c-7/7-002f/s2mpg11-meter/s2mpg11-odpm/iio:device1/enabled_rails
 
     chown system system /sys/devices/platform/acpm_mfd_bus@17500000/i2c-7/i2c-s2mpg10mfd/s2mpg10-meter/s2mpg10-odpm/iio:device0/enabled_rails
+    chown system system /sys/devices/platform/acpm_mfd_bus@17500000/i2c-7/7-001f/s2mpg10-meter/s2mpg10-odpm/iio:device0/enabled_rails
     chown system system /sys/devices/platform/acpm_mfd_bus@17510000/i2c-8/i2c-s2mpg11mfd/s2mpg11-meter/s2mpg11-odpm/iio:device1/enabled_rails
+    chown system system /sys/devices/platform/acpm_mfd_bus@17510000/i2c-8/8-002f/s2mpg11-meter/s2mpg11-odpm/iio:device1/enabled_rails
 
 on post-fs-data
     mkdir /data/vendor/powerstats 0771 system system
