@@ -369,6 +369,7 @@ void DumpstateDevice::dumpPowerSection(int fd) {
 		       "echo \"contaminant_detection_status:\"; cat $f/contaminant_detection_status;  done"});
 
     DumpFileToFd(fd, "PD Engine", "/dev/logbuffer_usbpd");
+    DumpFileToFd(fd, "POGO Transport", "/dev/logbuffer_pogo_transport");
     DumpFileToFd(fd, "PPS-google_cpm", "/dev/logbuffer_cpm");
     DumpFileToFd(fd, "PPS-dc", "/dev/logbuffer_pca9468");
 
@@ -487,6 +488,10 @@ void DumpstateDevice::dumpThermalSection(int fd) {
                    "for f in /sys/class/thermal/cooling* ; do "
                        "type=`cat $f/type` ; temp=`cat $f/cur_state` ; echo \"$type: $temp\" ; "
                        "done"});
+    RunCommandToFd(fd, "Cooling Device Time in State", {"/vendor/bin/sh", "-c", "for f in /sys/class/thermal/cooling* ; "
+                   "do type=`cat $f/type` ; temp=`cat $f/stats/time_in_state_ms` ; echo \"$type:\n$temp\" ; done"});
+    RunCommandToFd(fd, "Cooling Device Trans Table", {"/vendor/bin/sh", "-c", "for f in /sys/class/thermal/cooling* ; "
+                   "do type=`cat $f/type` ; temp=`cat $f/stats/trans_table` ; echo \"$type:\n$temp\" ; done"});
     RunCommandToFd(fd, "Cooling Device State2Power Table", {"/vendor/bin/sh", "-c",
                    "for f in /sys/class/thermal/cooling* ; do "
                        "type=`cat $f/type` ; state2power_table=`cat $f/state2power_table` ; echo \"$type: $state2power_table\" ; "
