@@ -62,6 +62,7 @@ constexpr char kI2CPath[] = "/sys/devices/platform/10d50000.hsi2c/i2c-";
 constexpr char kContaminantDetectionPath[] = "i2c-max77759tcpc/contaminant_detection";
 constexpr char kStatusPath[] = "i2c-max77759tcpc/contaminant_detection_status";
 constexpr char kSinkLimitEnable[] = "i2c-max77759tcpc/usb_limit_sink_enable";
+constexpr char kSourceLimitEnable[] = "i2c-max77759tcpc/usb_limit_source_enable";
 constexpr char kSinkLimitCurrent[] = "i2c-max77759tcpc/usb_limit_sink_current";
 constexpr char kTypecPath[] = "/sys/class/typec";
 constexpr char kDisableContatminantDetection[] = "vendor.usb.contaminantdisable";
@@ -82,23 +83,39 @@ ScopedAStatus Usb::enableUsbData(const string& in_portName, bool in_enable,
         int64_t in_transactionId) {
     bool result = true;
     std::vector<PortStatus> currentPortStatus;
+    string pullup;
 
     ALOGI("Userspace turn %s USB data signaling. opID:%ld", in_enable ? "on" : "off",
             in_transactionId);
 
     if (in_enable) {
         if (!mUsbDataEnabled) {
+            if (ReadFileToString(PULLUP_PATH, &pullup)) {
+                pullup = Trim(pullup);
+                if (pullup != kGadgetName) {
+                    if (!WriteStringToFile(kGadgetName, PULLUP_PATH)) {
+                        ALOGE("Gadget cannot be pulled up");
+                        result = false;
+                    }
+                }
+            }
+
             if (!WriteStringToFile("1", USB_DATA_PATH)) {
                 ALOGE("Not able to turn on usb connection notification");
                 result = false;
             }
-
-            if (!WriteStringToFile(kGadgetName, PULLUP_PATH)) {
-                ALOGE("Gadget cannot be pulled up");
-                result = false;
-            }
         }
     } else {
+        if (ReadFileToString(PULLUP_PATH, &pullup)) {
+            pullup = Trim(pullup);
+            if (pullup == kGadgetName) {
+                if (!WriteStringToFile("none", PULLUP_PATH)) {
+                    ALOGE("Gadget cannot be pulled down");
+                    result = false;
+                }
+            }
+        }
+
         if (!WriteStringToFile("1", ID_PATH)) {
             ALOGE("Not able to turn off host mode");
             result = false;
@@ -111,11 +128,6 @@ ScopedAStatus Usb::enableUsbData(const string& in_portName, bool in_enable,
 
         if (!WriteStringToFile("0", USB_DATA_PATH)) {
             ALOGE("Not able to turn on usb connection notification");
-            result = false;
-        }
-
-        if (!WriteStringToFile("none", PULLUP_PATH)) {
-            ALOGE("Gadget cannot be pulled down");
             result = false;
         }
     }
@@ -471,30 +483,40 @@ ScopedAStatus Usb::switchRole(const string& in_portName, const PortRole& in_role
 
 ScopedAStatus Usb::limitPowerTransfer(const string& in_portName, bool in_limit,
         int64_t in_transactionId) {
-    bool success = false;
+    bool sessionFail = false, success;
     std::vector<PortStatus> currentPortStatus;
-    string path, limitEnablePath, currentLimitPath;
+    string path, sinkLimitEnablePath, currentLimitPath, sourceLimitEnablePath;
 
     getI2cBusHelper(&path);
-    limitEnablePath = kI2CPath + path + "/" + kSinkLimitEnable;
+    sinkLimitEnablePath = kI2CPath + path + "/" + kSinkLimitEnable;
+    sourceLimitEnablePath = kI2CPath + path + "/" + kSourceLimitEnable;
     currentLimitPath = kI2CPath + path + "/" + kSinkLimitCurrent;
 
+    pthread_mutex_lock(&mLock);
     if (in_limit) {
         success = WriteStringToFile("0", currentLimitPath);
         if (!success) {
             ALOGE("Failed to set sink current limit");
+            sessionFail = true;
         }
     }
-    success = WriteStringToFile(in_limit ? "1" : "0", limitEnablePath);
+    success = WriteStringToFile(in_limit ? "1" : "0", sinkLimitEnablePath);
     if (!success) {
         ALOGE("Failed to %s sink current limit: %s", in_limit ? "enable" : "disable",
-              limitEnablePath.c_str());
+              sinkLimitEnablePath.c_str());
+        sessionFail = true;
+    }
+    success = WriteStringToFile(in_limit ? "1" : "0", sourceLimitEnablePath);
+    if (!success) {
+        ALOGE("Failed to %s source current limit: %s", in_limit ? "enable" : "disable",
+              sourceLimitEnablePath.c_str());
+              sessionFail = true;
     }
     ALOGI("limitPowerTransfer limit:%c opId:%ld", in_limit ? 'y' : 'n', in_transactionId);
-    pthread_mutex_lock(&mLock);
     if (mCallback != NULL && in_transactionId >= 0) {
         ScopedAStatus ret = mCallback->notifyLimitPowerTransferStatus(
-                in_portName, in_limit, success ? Status::SUCCESS : Status::ERROR, in_transactionId);
+                in_portName, in_limit, sessionFail ? Status::ERROR : Status::SUCCESS,
+                in_transactionId);
         if (!ret.isOk())
             ALOGE("limitPowerTransfer error %s", ret.getDescription().c_str());
     } else {
