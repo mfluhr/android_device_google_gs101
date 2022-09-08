@@ -82,7 +82,6 @@
 
        EnableOnChipStopNotification="2"
        PowerMode="3"
-       MinGpsWeekNumber="2216"
   />
 
   <gll_features
