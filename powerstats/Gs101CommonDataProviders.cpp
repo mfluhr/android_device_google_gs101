@@ -45,6 +45,8 @@ using aidl::android::hardware::power::stats::PowerStatsEnergyConsumer;
 constexpr char kBootHwSoCRev[] = "ro.boot.hw.soc.rev";
 
 void addAoC(std::shared_ptr<PowerStats> p) {
+    // AoC clock is synced from "libaoc.c"
+    static const uint64_t AOC_CLOCK = 4096;
     std::string prefix = "/sys/devices/platform/19000000.aoc/control/";
 
     // Add AoC cores (a32, ff1, hf0, and hf1)
@@ -57,7 +59,7 @@ void addAoC(std::shared_ptr<PowerStats> p) {
     std::vector<std::pair<std::string, std::string>> coreStates = {
             {"DWN", "off"}, {"RET", "retention"}, {"WFI", "wfi"}};
     p->addStateResidencyDataProvider(std::make_unique<AocStateResidencyDataProvider>(coreIds,
-            coreStates));
+            coreStates, AOC_CLOCK));
 
     // Add AoC voltage stats
     std::vector<std::pair<std::string, std::string>> voltageIds = {
@@ -68,7 +70,7 @@ void addAoC(std::shared_ptr<PowerStats> p) {
                                                                       {"UUD", "ultra_underdrive"},
                                                                       {"UD", "underdrive"}};
     p->addStateResidencyDataProvider(
-            std::make_unique<AocStateResidencyDataProvider>(voltageIds, voltageStates));
+            std::make_unique<AocStateResidencyDataProvider>(voltageIds, voltageStates, AOC_CLOCK));
 
     // Add AoC monitor mode
     std::vector<std::pair<std::string, std::string>> monitorIds = {
@@ -78,7 +80,7 @@ void addAoC(std::shared_ptr<PowerStats> p) {
             {"MON", "mode"},
     };
     p->addStateResidencyDataProvider(
-            std::make_unique<AocStateResidencyDataProvider>(monitorIds, monitorStates));
+            std::make_unique<AocStateResidencyDataProvider>(monitorIds, monitorStates, AOC_CLOCK));
 
     // Add AoC restart count
     const GenericStateResidencyDataProvider::StateResidencyConfig restartCountConfig = {
@@ -605,17 +607,33 @@ void addPowerDomains(std::shared_ptr<PowerStats> p) {
 }
 
 void addDevfreq(std::shared_ptr<PowerStats> p) {
-    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>("INT",
+    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>(
+            "INT",
             "/sys/devices/platform/17000020.devfreq_int/devfreq/17000020.devfreq_int"));
 
-    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>("INTCAM",
+    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>(
+            "INTCAM",
             "/sys/devices/platform/17000030.devfreq_intcam/devfreq/17000030.devfreq_intcam"));
 
-    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>("CAM",
+    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>(
+            "DISP",
+            "/sys/devices/platform/17000040.devfreq_disp/devfreq/17000040.devfreq_disp"));
+
+    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>(
+            "CAM",
             "/sys/devices/platform/17000050.devfreq_cam/devfreq/17000050.devfreq_cam"));
 
-    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>("TNR",
+    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>(
+            "TNR",
             "/sys/devices/platform/17000060.devfreq_tnr/devfreq/17000060.devfreq_tnr"));
+
+    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>(
+            "MFC",
+            "/sys/devices/platform/17000070.devfreq_mfc/devfreq/17000070.devfreq_mfc"));
+
+    p->addStateResidencyDataProvider(std::make_unique<DevfreqStateResidencyDataProvider>(
+            "BO",
+            "/sys/devices/platform/17000080.devfreq_bo/devfreq/17000080.devfreq_bo"));
 }
 
 void addTPU(std::shared_ptr<PowerStats> p) {
@@ -630,7 +648,7 @@ void addTPU(std::shared_ptr<PowerStats> p) {
 
     p->addEnergyConsumer(PowerStatsEnergyConsumer::createMeterAndAttrConsumer(p,
             EnergyConsumerType::OTHER, "TPU", {"S10M_VDD_TPU"},
-            {{UID_TIME_IN_STATE, "/sys/class/edgetpu/abrolhos/device/tpu_usage"}},
+            {{UID_TIME_IN_STATE, "/sys/class/edgetpu/edgetpu-soc/device/tpu_usage"}},
             stateCoeffs));
 }
 
