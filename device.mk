@@ -545,7 +545,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES_DEBUG += \
 	f2fs_io \
 	check_f2fs \
-	f2fsstat \
 	f2fs.fibmap \
 	dump.f2fs
 
@@ -609,7 +608,6 @@ PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/android.hardware.camera.full.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.full.xml\
 	frameworks/native/data/etc/android.hardware.camera.raw.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/android.hardware.camera.raw.xml\
 	vendor/google/services/LyricCameraHAL/src/vendor.android.hardware.camera.preview-dis.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/vendor.android.hardware.camera.preview-dis.xml\
-	vendor/google/services/LyricCameraHAL/src/vendor.android.hardware.camera.stream-usecase.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/vendor.android.hardware.camera.stream-usecase.xml\
 
 #PRODUCT_COPY_FILES += \
 	frameworks/native/data/etc/handheld_core_hardware.xml:$(TARGET_COPY_OUT_VENDOR)/etc/permissions/handheld_core_hardware.xml \
@@ -900,6 +898,7 @@ $(call inherit-product-if-exists, vendor/samsung_slsi/telephony/$(BOARD_USES_SHA
 
 #RCS Test Messaging App
 PRODUCT_PACKAGES_DEBUG += \
+	preinstalled-packages-product-gs101-device-debug.xml \
 	TestRcsApp
 
 PRODUCT_PACKAGES += ShannonRcs
