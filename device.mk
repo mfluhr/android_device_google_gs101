@@ -22,6 +22,7 @@ include device/google/gs-common/modem/modem.mk
 include device/google/gs-common/aoc/aoc.mk
 include device/google/gs-common/thermal/thermal.mk
 include device/google/gs-common/pixel_metrics/pixel_metrics.mk
+include device/google/gs-common/performance/perf.mk
 
 TARGET_BOARD_PLATFORM := gs101
 DEVICE_IS_64BIT_ONLY ?= $(if $(filter %_64,$(TARGET_PRODUCT)),true,false)
@@ -224,6 +225,11 @@ else
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.egl = mali
 endif
+
+# Configure EGL blobcache
+PRODUCT_VENDOR_PROPERTIES += \
+       ro.egl.blobcache.multifile=true \
+       ro.egl.blobcache.multifile_limit=134217728 \
 
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.opengles.version=196610 \
@@ -544,7 +550,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES_DEBUG += \
 	f2fs_io \
 	check_f2fs \
-	f2fsstat \
 	f2fs.fibmap \
 	dump.f2fs
 
@@ -898,6 +903,7 @@ $(call inherit-product-if-exists, vendor/samsung_slsi/telephony/$(BOARD_USES_SHA
 
 #RCS Test Messaging App
 PRODUCT_PACKAGES_DEBUG += \
+	preinstalled-packages-product-gs101-device-debug.xml \
 	TestRcsApp
 
 PRODUCT_PACKAGES += ShannonRcs
@@ -916,6 +922,8 @@ SUPPORT_MULTI_SIM := true
 SUPPORT_NR := true
 # Using IRadio 1.6
 USE_RADIO_HAL_1_6 := true
+# Support SecureElement HAL for HIDL
+USE_SE_HIDL := true
 
 #$(call inherit-product, vendor/google_devices/telephony/common/device-vendor.mk)
 #$(call inherit-product, vendor/google_devices/gs101/proprietary/device-vendor.mk)
