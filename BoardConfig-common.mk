@@ -217,12 +217,15 @@ $(call soong_config_set,haptics,actuator_model,$(ACTUATOR_MODEL))
 # SoundTriggerHAL Configuration
 #BOARD_USE_SOUNDTRIGGER_HAL := false
 
+# Vibrator HAL actuator model and adaptive haptics configuration
+$(call soong_config_set,haptics,actuator_model,$(ACTUATOR_MODEL))
+$(call soong_config_set,haptics,adaptive_haptics_feature,$(ADAPTIVE_HAPTICS_FEATURE))
+
 # HWComposer
 BOARD_HWC_VERSION := libhwc2.1
 TARGET_RUNNING_WITHOUT_SYNC_FRAMEWORK := false
 BOARD_HDMI_INCAPABLE := true
 TARGET_USES_HWC2 := true
-HWC_SKIP_VALIDATE := true
 HWC_SUPPORT_RENDER_INTENT := true
 HWC_SUPPORT_COLOR_TRANSFORM := true
 #BOARD_USES_DISPLAYPORT := true

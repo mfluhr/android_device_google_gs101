@@ -18,10 +18,14 @@ include device/google/gs-common/device.mk
 include device/google/gs-common/gs_watchdogd/watchdog.mk
 include device/google/gs-common/ramdump/ramdump.mk
 include device/google/gs-common/soc/soc.mk
+include device/google/gs-common/soc/freq.mk
 include device/google/gs-common/modem/modem.mk
 include device/google/gs-common/aoc/aoc.mk
 include device/google/gs-common/thermal/thermal.mk
 include device/google/gs-common/pixel_metrics/pixel_metrics.mk
+include device/google/gs-common/performance/perf.mk
+include device/google/gs-common/display/dump.mk
+include device/google/gs101/dumpstate/item.mk
 
 TARGET_BOARD_PLATFORM := gs101
 DEVICE_IS_64BIT_ONLY ?= $(if $(filter %_64,$(TARGET_PRODUCT)),true,false)
@@ -180,6 +184,9 @@ USES_GAUDIO := true
 # Must match BOARD_USES_SWIFTSHADER in BoardConfig.mk
 USE_SWIFTSHADER := false
 
+# by default, USE_ANGLE is false
+USE_ANGLE ?= false
+
 # HWUI
 TARGET_USES_VULKAN = true
 
@@ -202,11 +209,24 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 	debug.mali.disable_backend_affinity=true
 
+# Mali Configuration Properties
+PRODUCT_VENDOR_PROPERTIES += \
+	vendor.mali.base_protected_max_core_count=3 \
+	vendor.mali.base_protected_tls_max=67108864 \
+	vendor.mali.platform_agt_frequency_khz=24576
+
 ifeq ($(USE_SWIFTSHADER),true)
 PRODUCT_PACKAGES += \
 	libGLESv1_CM_swiftshader \
 	libEGL_swiftshader \
 	libGLESv2_swiftshader
+endif
+
+ifeq ($(USE_ANGLE),true)
+PRODUCT_PACKAGES += \
+	libEGL_angle \
+	libGLESv1_CM_angle \
+	libGLESv2_angle
 endif
 
 PRODUCT_COPY_FILES += \
@@ -220,10 +240,19 @@ PRODUCT_COPY_FILES += \
 ifeq ($(USE_SWIFTSHADER),true)
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.egl = swiftshader
+else ifeq ($(USE_ANGLE),true)
+PRODUCT_VENDOR_PROPERTIES += \
+	ro.hardware.egl = angle \
+	ro.hardware.egl_legacy = mali
 else
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.egl = mali
 endif
+
+# Configure EGL blobcache
+PRODUCT_VENDOR_PROPERTIES += \
+       ro.egl.blobcache.multifile=true \
+       ro.egl.blobcache.multifile_limit=134217728 \
 
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.opengles.version=196610 \
@@ -544,7 +573,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES_DEBUG += \
 	f2fs_io \
 	check_f2fs \
-	f2fsstat \
 	f2fs.fibmap \
 	dump.f2fs
 
@@ -898,6 +926,7 @@ $(call inherit-product-if-exists, vendor/samsung_slsi/telephony/$(BOARD_USES_SHA
 
 #RCS Test Messaging App
 PRODUCT_PACKAGES_DEBUG += \
+	preinstalled-packages-product-gs101-device-debug.xml \
 	TestRcsApp
 
 PRODUCT_PACKAGES += ShannonRcs
@@ -916,6 +945,8 @@ SUPPORT_MULTI_SIM := true
 SUPPORT_NR := true
 # Using IRadio 1.6
 USE_RADIO_HAL_1_6 := true
+# Support SecureElement HAL for HIDL
+USE_SE_HIDL := true
 
 #$(call inherit-product, vendor/google_devices/telephony/common/device-vendor.mk)
 #$(call inherit-product, vendor/google_devices/gs101/proprietary/device-vendor.mk)
@@ -987,61 +1018,7 @@ PRODUCT_PACKAGES += \
 
 # Audio
 # Audio HAL Server & Default Implementations
-PRODUCT_PACKAGES += \
-	android.hardware.audio.service \
-	android.hardware.audio@7.1-impl \
-	android.hardware.audio.effect@7.0-impl \
-	android.hardware.bluetooth.audio-impl \
-	android.hardware.soundtrigger@2.3-impl \
-	vendor.google.whitechapel.audio.audioext@4.0-impl
-
-#Audio HAL libraries
-PRODUCT_PACKAGES += \
-	audio.primary.$(TARGET_BOARD_PLATFORM) \
-	audio.platform.aoc \
-	sound_trigger.primary.$(TARGET_BOARD_PLATFORM) \
-	audio_bt_aoc \
-	audio_tunnel_aoc \
-	aoc_aud_ext \
-	libaoctuningdecoder \
-	libaoc_waves \
-	liboffloadeffect \
-	audio_waves_aoc \
-	audio_fortemedia_aoc \
-	audio_bluenote_aoc \
-	audio_usb_aoc \
-	audio_spk_35l41 \
-	audio.usb.default \
-	audio.usbv2.default \
-	audio.bluetooth.default \
-	audio.r_submix.default \
-	libamcsextfile \
-	audio_amcs_ext \
-
-
-#Audio Vendor libraries
-PRODUCT_PACKAGES += \
-	libfvsam_prm_parser \
-	libmahalcontroller \
-	libAlgFx_HiFi3z
-
-# AudioHAL Configurations
-PRODUCT_COPY_FILES += \
-	frameworks/av/services/audiopolicy/config/a2dp_audio_policy_configuration_7_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_audio_policy_configuration_7_0.xml \
-	frameworks/av/services/audiopolicy/config/a2dp_in_audio_policy_configuration_7_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/a2dp_in_audio_policy_configuration_7_0.xml \
-	frameworks/av/services/audiopolicy/config/bluetooth_audio_policy_configuration_7_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/bluetooth_audio_policy_configuration_7_0.xml \
-	frameworks/av/services/audiopolicy/config/hearing_aid_audio_policy_configuration_7_0.xml:$(TARGET_COPY_OUT_VENDOR)/etc/hearing_aid_audio_policy_configuration_7_0.xml \
-	frameworks/av/services/audiopolicy/config/r_submix_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/r_submix_audio_policy_configuration.xml \
-	frameworks/av/services/audiopolicy/config/usb_audio_policy_configuration.xml:$(TARGET_COPY_OUT_VENDOR)/etc/usb_audio_policy_configuration.xml \
-	frameworks/av/services/audiopolicy/config/audio_policy_volumes.xml:$(TARGET_COPY_OUT_VENDOR)/etc/audio_policy_volumes.xml \
-	frameworks/av/services/audiopolicy/config/default_volume_tables.xml:$(TARGET_COPY_OUT_VENDOR)/etc/default_volume_tables.xml \
-
-#Audio soong
-PRODUCT_SOONG_NAMESPACES += \
-	vendor/google/whitechapel/audio/hal \
-	vendor/google/whitechapel/audio/interfaces
-
-$(call soong_config_set,aoc_audio_board,platform,$(TARGET_BOARD_PLATFORM))
+include device/google/gs-common/audio/hidl_gs101.mk
 
 ## AoC soong
 PRODUCT_SOONG_NAMESPACES += \
@@ -1103,11 +1080,6 @@ include device/google/gs-common/edgetpu/edgetpu.mk
 $(call soong_config_set,edgetpu_config,chip,abrolhos)
 # TPU firmware
 PRODUCT_PACKAGES += edgetpu-abrolhos.fw
-# TPU DBA AIDL HAL service
-PRODUCT_PACKAGES += com.google.edgetpu.dba-service
-# TPU DBA C API library
-PRODUCT_PACKAGES += libedgetpu_dba.google
-
 
 # Connectivity Thermal Power Manager
 PRODUCT_PACKAGES += \
