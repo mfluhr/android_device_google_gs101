@@ -749,14 +749,19 @@ on property:sys.boot_completed=1
 
     # Set ug group
     write /proc/vendor_sched/bg_ug 0
-    write /proc/vendor_sched/sys_ug 0
+    write /proc/vendor_sched/sysbg_ug 0
     write /proc/vendor_sched/ota_ug 0
     write /proc/vendor_sched/dex2oat_ug 1
+    write /proc/vendor_sched/ta_ug 1
 
     # Set bg group throttle
-    write /proc/vendor_sched/ug_bg_group_throttle 308
-    # TODO: remove this one after all kernel prebuilts are merged
-    write /proc/vendor_sched/vug_bg_group_throttle 308
+    write /proc/vendor_sched/ug_bg_group_throttle ${persist.device_config.vendor_system_native.ug_bg_group_throttle:-308}
+
+    # Set uclamp.max for some groups, which could indicate cpu importance used in scheduling
+    write /proc/vendor_sched/bg_uclamp_max 512
+    write /proc/vendor_sched/sysbg_uclamp_max 512
+    write /proc/vendor_sched/ota_uclamp_max 512
+    write /proc/vendor_sched/dex2oat_uclamp_max 615
 
     # Set PMU freq limit parameters
     write /sys/devices/system/cpu/cpufreq/policy0/sched_pixel/lcpi_threshold 2
@@ -775,12 +780,6 @@ on property:sys.boot_completed=1
     write /sys/devices/system/cpu/cpufreq/policy4/sched_pixel/pmu_limit_enable 1
     write /sys/devices/system/cpu/cpufreq/policy6/sched_pixel/pmu_limit_enable 1
     write /proc/vendor_sched/pmu_poll_enable 0
-
-    # Setup groups for SF (RT used for SF RE, SF used for SF main)
-    write /proc/vendor_sched/rt_uclamp_min 161
-    write /proc/vendor_sched/rt_prefer_idle 1
-    write /proc/vendor_sched/sf_uclamp_min 39
-    write /proc/vendor_sched/sf_prefer_idle 1
 
     # Setup cpu.shares to throttle background groups (bg ~ 5% sysbg ~ 5% dex2oat ~2.5%)
     write /dev/cpuctl/background/cpu.shares 1024
@@ -855,6 +854,7 @@ on post-fs-data
     symlink /mnt/vendor/persist/ss /data/vendor/ss/persist
     chown root system /data/vendor/ss/persist
     chmod 0770 /data/vendor/ss/persist
+    chown system system /data/vendor/ss/persist/nsp
 
     restart storageproxyd
 
@@ -897,6 +897,9 @@ on fs
 on post-fs-data
     mkdir /data/vendor/powerstats 0771 system system
     chown system system /data/vendor/powerstats
+    # Thermal Residency Stats (write 1 to reset)
+    chown system system /sys/kernel/metrics/thermal/tr_by_group/tmu/stats_reset
+    chown system system /sys/kernel/metrics/thermal/tr_by_group/spmic/stats_reset
 
 on property:vendor.thermal.link_ready=1
     # BCL
@@ -1018,3 +1021,7 @@ on property:persist.device_config.vendor_system_native.restricted_cpuset=*
     write /dev/cpuset/restricted/cpus ${persist.device_config.vendor_system_native.restricted_cpuset:-0-3}
 on property:persist.device_config.vendor_system_native.camera-daemon_cpuset=*
     write /dev/cpuset/camera-daemon/cpus ${persist.device_config.vendor_system_native.camera-daemon_cpuset:-0-7}
+
+# Set esim property for LPA
+on property:persist.vendor.modem.esim_profiles_exist=*
+    setprop persist.modem.esim_profiles_exist ${persist.vendor.modem.esim_profiles_exist}
