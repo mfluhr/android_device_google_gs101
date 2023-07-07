@@ -30,6 +30,7 @@ include device/google/gs-common/radio/dump.mk
 include device/google/gs-common/gear/dumpstate/aidl.mk
 include device/google/gs-common/camera/dump.mk
 include device/google/gs-common/gps/dump/log.mk
+include device/google/gs-common/widevine/widevine.mk
 
 TARGET_BOARD_PLATFORM := gs101
 DEVICE_IS_64BIT_ONLY ?= $(if $(filter %_64,$(TARGET_PRODUCT)),true,false)
@@ -188,9 +189,6 @@ USES_GAUDIO := true
 # Must match BOARD_USES_SWIFTSHADER in BoardConfig.mk
 USE_SWIFTSHADER := false
 
-# by default, USE_ANGLE is false
-USE_ANGLE ?= false
-
 # HWUI
 TARGET_USES_VULKAN = true
 
@@ -215,6 +213,8 @@ PRODUCT_DEFAULT_PROPERTY_OVERRIDES += \
 
 # Mali Configuration Properties
 PRODUCT_VENDOR_PROPERTIES += \
+	vendor.mali.platform.config=/vendor/etc/mali/platform.config \
+	vendor.mali.debug.config=/vendor/etc/mali/debug.config \
 	vendor.mali.base_protected_max_core_count=3 \
 	vendor.mali.base_protected_tls_max=67108864 \
 	vendor.mali.platform_agt_frequency_khz=24576
@@ -224,13 +224,6 @@ PRODUCT_PACKAGES += \
 	libGLESv1_CM_swiftshader \
 	libEGL_swiftshader \
 	libGLESv2_swiftshader
-endif
-
-ifeq ($(USE_ANGLE),true)
-PRODUCT_PACKAGES += \
-	libEGL_angle \
-	libGLESv1_CM_angle \
-	libGLESv2_angle
 endif
 
 PRODUCT_COPY_FILES += \
@@ -244,10 +237,6 @@ PRODUCT_COPY_FILES += \
 ifeq ($(USE_SWIFTSHADER),true)
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.egl = swiftshader
-else ifeq ($(USE_ANGLE),true)
-PRODUCT_VENDOR_PROPERTIES += \
-	ro.hardware.egl = angle \
-	ro.hardware.egl_legacy = mali
 else
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.hardware.egl = mali
@@ -261,7 +250,7 @@ PRODUCT_VENDOR_PROPERTIES += \
 PRODUCT_VENDOR_PROPERTIES += \
 	ro.opengles.version=196610 \
 	graphics.gpu.profiler.support=true \
-	debug.renderengine.backend=skiavkthreaded
+	debug.renderengine.backend=skiaglthreaded
 
 # GRAPHICS - GPU (end)
 # ####################
@@ -531,10 +520,7 @@ PRODUCT_PACKAGES += \
 
 # WideVine modules
 PRODUCT_PACKAGES += \
-	android.hardware.drm-service.clearkey \
-	liboemcrypto \
-
--include vendor/widevine/libwvdrmengine/apex/device/device.mk
+	liboemcrypto
 
 $(call soong_config_set,google3a_config,soc,gs101)
 $(call soong_config_set,google3a_config,gcam_awb,true)
