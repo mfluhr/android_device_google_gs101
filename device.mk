@@ -513,8 +513,12 @@ SOONG_CONFIG_gch_hwl_library := lyric
 endif
 
 # WiFi
+ifeq ($(wildcard vendor/google/bluejay/proprietary/vendor/bin/hw/vendor.google.wifi_ext@1.0-service-vendor),)
 PRODUCT_PACKAGES += \
-	android.hardware.wifi@1.0-service \
+	android.hardware.wifi@1.0-service
+endif
+
+PRODUCT_PACKAGES += \
 	wificond \
 	libwpa_client \
 	WifiOverlay \
