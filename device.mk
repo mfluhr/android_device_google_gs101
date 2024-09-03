@@ -529,8 +529,12 @@ $(call soong_config_set,lyric,soc,gs101)
 $(call soong_config_set,google3a_config,soc,gs101)
 
 # WiFi
+ifeq ($(wildcard vendor/google/bluejay/proprietary/vendor/apex/com.google.pixel.wifi.ext.apex),)
 PRODUCT_PACKAGES += \
-	android.hardware.wifi-service \
+	android.hardware.wifi-service
+endif
+
+PRODUCT_PACKAGES += \
 	wificond \
 	libwpa_client \
 	WifiOverlay \
